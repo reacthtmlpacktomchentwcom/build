@@ -1,0 +1,254 @@
+<!doctype html>
+<html class="no-js" lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <base data-reacthtmlpack-inject-props="server.head.base" data-reacthtmlpack-inject-method="replaceWith">
+    <title data-reacthtmlpack-inject-props="server.head.title" data-reacthtmlpack-inject-method="replaceWith"></title>
+    <meta  data-reacthtmlpack-inject-props="server.head.meta" data-reacthtmlpack-inject-method="replaceWith">
+
+    <link rel="stylesheet" data-reacthtmlpack-extract-text-from-module-name="./client.js">
+
+    <script data-reacthtmlpack-module-name="./universal.js">
+      // Start coding your React here.
+      /* eslint-disable react/no-multi-comp */
+      type ReactElement = {type: any};
+
+      import {
+        default as React,
+        Component,
+      } from "react";
+
+      import {
+        IndexLink,
+        Route,
+        IndexRoute,
+      } from "react-router";
+
+      import {
+        connect,
+      } from "react-redux";
+
+      import thunk from "redux-thunk";
+
+      import {
+        createAction,
+        handleActions,
+      } from "redux-actions";
+
+      import {
+        applyMiddleware,
+        compose,
+        createStore,
+      } from "redux";
+
+      import {
+        default as Helmet,
+      } from "react-helmet";
+
+      const COUNTER_INCREMENT = `COUNTER_INCREMENT`;
+
+      const increment = createAction(COUNTER_INCREMENT, (value = 1) => value);
+
+      const actions = {
+        increment,
+      };
+
+      const rootReducer = handleActions({
+        [COUNTER_INCREMENT]: (state, { payload }) => state + payload,
+      }, 1);
+
+      export const configureStore = (initialState) => {
+        const middleware = applyMiddleware(thunk);
+        const createStoreWithMiddleware = compose(middleware);
+        const store = createStoreWithMiddleware(createStore)(
+          rootReducer, initialState
+        );
+        return store;
+      };
+
+      function CoreLayout({ children }) {
+        return (
+          <div className="page-container">
+            <Helmet
+              titleTemplate="%s | reacthtmlpack"
+              base={{
+                "href": `/`,
+              }}
+              meta={[
+                { "name": `viewport`, "content": `width=device-width, initial-scale=1` },
+                { "name": `description`, "content": `React/Redux/React-Router/React-Helmet application` },
+                { "property": `og:type`, "content": `article` },
+              ]}
+            />
+            <div className="view-container">
+              {children}
+            </div>
+          </div>
+        );
+      }
+
+      CoreLayout.propTypes = {
+        children: React.PropTypes.element,
+      };
+
+      class HomeView extends Component {
+        static propTypes = {
+          counter: React.PropTypes.number.isRequired,
+          increment: React.PropTypes.func.isRequired,
+        };
+
+        render() {
+          return (
+            <div className="container text-center">
+              <Helmet
+                title="Home"
+              />
+              <h1>Welcome to the React Redux Starter Kit</h1>
+              <h2>
+                Sample Counter:&nbsp;
+                <span className="counter--green">{this.props.counter}</span>
+              </h2>
+              <p>
+                Webpack HMR test area!!
+              </p>
+              <button
+                className="btn btn-default"
+                onClick={() => this.props.increment(1)}
+              >
+                Increment
+              </button>
+              <hr />
+              <IndexLink to="/about">Go To About View</IndexLink>
+            </div>
+          );
+        }
+      }
+
+      const HomeViewContainer = connect((state) => ({
+        counter: state,
+      }), actions)(HomeView);
+
+      function AboutView() {
+        return (
+          <div className="container text-center">
+            <Helmet
+              title="About"
+            />
+            <h1>This is the about view!</h1>
+            <hr />
+            <IndexLink to="/">Back To Home View</IndexLink>
+          </div>
+        );
+      }
+
+      export const routes = (
+        <Route path="/" component={CoreLayout}>
+          <IndexRoute component={HomeViewContainer} />
+          <Route path="about">
+            <IndexRoute component={AboutView} />
+          </Route>
+        </Route>
+      );
+    </script>
+    <script data-reacthtmlpack-module-name="./server.js" data-reacthtmlpack-entry-target="node" data-reacthtmlpack-provide-props="server">
+      import {
+        default as React,
+      } from "react";
+
+      import {
+        default as ReactDOMServer,
+      } from "react-dom/server";
+
+      import {
+        Provider,
+      } from "react-redux";
+
+      import {
+        match,
+        RouterContext,
+      } from "react-router";
+
+      import {
+        default as Helmet,
+      } from "react-helmet";
+
+      import {
+        configureStore,
+        routes,
+      } from "./universal";
+
+      export default ({ location }, contentReady: (error: any, injectProps: any) => void) => {
+        match({ routes, location }, (error, redirectLocation, renderProps) => {
+          if (renderProps) {
+            const store = configureStore();
+            const innerHTML = ReactDOMServer.renderToString(
+              <Provider store={store}>
+                <RouterContext {...renderProps} />
+              </Provider>
+            );
+            const serializedState = JSON.stringify(store.getState());
+            const serializedStateInnerHTML = `window.__INITIAL_STATE__ = ${ serializedState };`;
+
+            contentReady(null, {
+              innerHTML,
+              serializedStateInnerHTML,
+              head: Helmet.rewind(),
+            });
+          } else {
+            contentReady(error || redirectLocation || `Not found`);
+          }
+        });
+      };
+    </script>
+  </head>
+  <body>
+    <p>Hello world! This is HTML5 Boilerplate.</p>
+
+
+    <div id="react-container" data-reacthtmlpack-inject-props="server.innerHTML">
+      <!-- The innerHTML of this node will be the arguments passed to contentReady() -->
+      <!-- with key "innerHTML" under provide-props="server" -->
+    </div>
+
+    <script data-reacthtmlpack-inject-props="server.serializedStateInnerHTML">
+      // The innerHTML of this node will be the arguments passed to contentReady()
+      // with key "serializedStateInnerHTML" under provide-props="server"
+    </script>
+
+    <script data-reacthtmlpack-module-name="./client.js" data-reacthtmlpack-entry-target="web">
+      import "normalize.css";
+
+      import {
+        default as React,
+      } from "react";
+
+      import {
+        default as ReactDOM,
+      } from "react-dom";
+
+      import {
+        Provider,
+      } from "react-redux";
+
+      import {
+        Router,
+        browserHistory,
+      } from "react-router";
+
+      import {
+        configureStore,
+        routes,
+      } from "./universal";
+
+      ReactDOM.render((
+        <Provider store={configureStore(window.__INITIAL_STATE__)}>
+          <Router
+            history={browserHistory}
+            routes={routes}
+          />
+        </Provider>
+      ), document.getElementById(`react-container`));
+    </script>
+  </body>
+</html>
